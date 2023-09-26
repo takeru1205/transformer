@@ -2,7 +2,7 @@ version: '3'
 services:
   env:
     build: .
-    container_name: 'ds-template'
+    container_name: 'transformer'
     working_dir: '/kaggle'
     environment:
       - DISPLAY=$DISPLAY
