@@ -32,8 +32,6 @@ WORKDIR /kaggle
 COPY requirements.txt /kaggle
 RUN pip install -r requirements.txt
 
-RUN pip install lightgbm --install-option=--cuda
-
 # install jupyter-vim-binding
 RUN mkdir -p $(jupyter --data-dir)/nbextensions && \
     cd $(jupyter --data-dir)/nbextensions && \
