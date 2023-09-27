@@ -148,6 +148,24 @@ Encoderは以下の要素からなっている
     - 出力に入力を足してLayer Norm
 
 
+## Decoder
+
+![decoder](imgs/decoder.png)
+
+Decoderは以下の要素からなっている
+
+- Embedding層(出力を単語分散表現に変換)
+- Positional Encoding層
+  - Embedding層の出力を重み付けする
+- EncoderLayer をN回繰り返す
+  - Masked Multihead Attention
+    - 出力に入力を足してLayer Norm
+  - Multihead Attention
+    - Encoderの出力をV,K(target)として、Masked Multihead Attentionの出力(src)をQに入力
+    - 出力に入力を足してLayer Norm
+  - FeedForward Network
+    - 出力に入力を足してLayer Norm
+
 
 
 
