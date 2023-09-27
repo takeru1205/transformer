@@ -134,7 +134,7 @@ FFN(x) = max(0, xW_1 + b_1)W_2 + b_2
 
 Transformerはseq2seqの一種だから、Encoder-Decoderの構造をしている。
 
-[encoder](imgs/encoder.png)
+![encoder](imgs/encoder.png)
 
 Encoderは以下の要素からなっている
 
