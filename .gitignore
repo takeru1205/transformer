@@ -3,3 +3,5 @@ model/
 data/
 __pycache__/
 *.zip
+
+corpus/
