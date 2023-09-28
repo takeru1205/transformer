@@ -1,4 +1,5 @@
 import numpy as np
+
 import torch
 import torch.nn as nn
 
@@ -13,9 +14,7 @@ class AddPositionalEncoding(nn.Module):
         super().__init__()
         self.d_model = d_model
         self.max_len = max_len
-        positional_encoding_weight: torch.Tensor = self._initialize_weight().to(
-            device,
-        )
+        positional_encoding_weight: torch.Tensor = self._initialize_weight().to(device)
         self.register_buffer(
             "positional_encoding_weight",
             positional_encoding_weight,
@@ -26,8 +25,6 @@ class AddPositionalEncoding(nn.Module):
         return x + self.positional_encoding_weight[:seq_len, :].unsqueeze(0)
 
     def _get_positional_encoding(self, pos: int, i: int) -> float:
-        # pos / { 10000 ^ (2i / d_model) }
-        # official implementation does not contain "// 2"
         w = pos / (10000 ** (((2 * i) // 2) / self.d_model))
         if i % 2 == 0:
             return np.sin(w)

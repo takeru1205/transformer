@@ -3,13 +3,13 @@ import torch.nn as nn
 from torch.nn import LayerNorm
 
 
-from embedding import Embedding
-from ffn import FFN
-from multi_head import MultiHeadAttention
-from positional_encoding import AddPositionalEncoding
+from .embedding import Embedding
+from .ffn import FFN
+from .multi_head import MultiHeadAttention
+from .positional_encoding import AddPositionalEncoding
 
 
-class EncorderLayer(nn.Module):
+class EncoderLayer(nn.Module):
     def __init__(
         self,
         d_model: int,
@@ -40,9 +40,7 @@ class EncorderLayer(nn.Module):
         return x
 
     def __self_attention_block(
-        self,
-        x: torch.Tensor,
-        mask: torch.Tensor,
+        self, x: torch.Tensor, mask: torch.Tensor
     ) -> torch.Tensor:
         """
         self attention block
@@ -50,10 +48,7 @@ class EncorderLayer(nn.Module):
         x = self.multi_head_attention(x, x, x, mask)
         return self.dropout_self_attention(x)
 
-    def __feed_forward_block(
-        self,
-        x: torch.Tensor,
-    ) -> torch.Tensor:
+    def __feed_forward_block(self, x: torch.Tensor) -> torch.Tensor:
         """
         feed forward block
         """
@@ -83,9 +78,9 @@ class Encoder(nn.Module):
             device,
         )
 
-        self.encoding_layers = nn.ModuleList(
+        self.encoder_layers = nn.ModuleList(
             [
-                EncorderLayer(
+                EncoderLayer(
                     d_model,
                     d_ff,
                     heads_num,
@@ -103,6 +98,6 @@ class Encoder(nn.Module):
     ) -> torch.Tensor:
         x = self.embedding(x)
         x = self.positional_encoding(x)
-        for encoding_layers in self.encoding_layers:
-            x = encoding_layers(x, mask)
+        for encoder_layer in self.encoder_layers:
+            x = encoder_layer(x, mask)
         return x

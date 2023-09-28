@@ -7,30 +7,27 @@ from transformer.scaled_dot_product import ScaledDotProductAttention
 class MultiHeadAttention(nn.Module):
     def __init__(self, d_model: int, h: int) -> None:
         super().__init__()
-        self.d_model = d_model  # Number of output dim of embed model
-        self.h = h  # Number of heads
+        self.d_model = d_model
+        self.h = h
         self.d_k = d_model // h
         self.d_v = d_model // h
 
         # Scaled Dot-Product前の線形変換
-        self.W_q = nn.Parameter(
-            # ヘッド数, 入力次元, 出力次元(=入力次元/ヘッド数)
-            torch.Tensor(h, d_model, self.d_k)
+        self.W_k = nn.Parameter(
+            torch.Tensor(h, d_model, self.d_k)  # ヘッド数, 入力次元, 出力次元(=入力次元/ヘッド数)
         )
 
-        self.W_k = nn.Parameter(
-            # ヘッド数, 入力次元, 出力次元(=入力次元/ヘッド数)
-            torch.Tensor(h, d_model, self.d_k)
+        self.W_q = nn.Parameter(
+            torch.Tensor(h, d_model, self.d_k)  # ヘッド数, 入力次元, 出力次元(=入力次元/ヘッド数)
         )
 
         self.W_v = nn.Parameter(
-            # ヘッド数, 入力次元, 出力次元(=入力次元/ヘッド数)
-            torch.Tensor(h, d_model, self.d_v)
+            torch.Tensor(h, d_model, self.d_v)  # ヘッド数, 入力次元, 出力次元(=入力次元/ヘッド数)
         )
 
         self.scaled_dot_product_attention = ScaledDotProductAttention(self.d_k)
 
-        self.linear = nn.Liear(h * self.d_v, d_model)
+        self.linear = nn.Linear(h * self.d_v, d_model)
 
     def forward(
         self,
@@ -41,20 +38,20 @@ class MultiHeadAttention(nn.Module):
     ) -> torch.Tensor:
         batch_size, seq_len = q.size(0), q.size(1)
 
-        """repeat Query, Key, Value by num of heads"""
+        """repeat Query,Key,Value by num of heads"""
         q = q.repeat(self.h, 1, 1, 1)  # head, batch_size, seq_len, d_model
         k = k.repeat(self.h, 1, 1, 1)  # head, batch_size, seq_len, d_model
         v = v.repeat(self.h, 1, 1, 1)  # head, batch_size, seq_len, d_model
 
-        """Linear before scaeld dot product attention"""
+        """Linear before scaled dot product attention"""
         q = torch.einsum(
             "hijk,hkl->hijl", (q, self.W_q)
         )  # head, batch_size, d_k, seq_len
         k = torch.einsum(
-            "hijk,hkl->hijl", (q, self.W_k)
+            "hijk,hkl->hijl", (k, self.W_k)
         )  # head, batch_size, d_k, seq_len
         v = torch.einsum(
-            "hijk,hkl->hijl", (q, self.W_v)
+            "hijk,hkl->hijl", (v, self.W_v)
         )  # head, batch_size, d_k, seq_len
 
         """Split heads"""
@@ -68,11 +65,11 @@ class MultiHeadAttention(nn.Module):
         """Scaled dot product attention"""
         attention_output = self.scaled_dot_product_attention(
             q, k, v, mask_3d
-        )  # (head * batch_size, seq_len ,d_model)
+        )  # (head*batch_size, seq_len, d_model)
 
         attention_output = torch.chunk(attention_output, self.h, dim=0)
         attention_output = torch.cat(attention_output, dim=2)
 
-        """Linear after scaeld dot product attention"""
+        """Linear after scaled dot product attention"""
         output = self.linear(attention_output)
         return output

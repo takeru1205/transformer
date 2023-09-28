@@ -1,7 +1,5 @@
-notebook==6.5.6
 jupyterthemes == 0.20.0
 plotly == 5.0.0
 RISE == 5.7.1
 seaborn
 matplotlib
-transformers

@@ -1,8 +1,8 @@
 import torch
 import torch.nn as nn
 
-from .encoder import Encoder
 from .decoder import Decoder
+from .encoder import Encoder
 
 
 class Transformer(nn.Module):
@@ -17,15 +17,15 @@ class Transformer(nn.Module):
         N: int = 6,
         dropout_rate: float = 0.1,
         layer_norm_eps: float = 1e-5,
-        pad_idx: 0,
+        pad_idx: int = 0,
         device: torch.device = torch.device("cpu"),
     ):
         super().__init__()
 
         self.src_vocab_size = src_vocab_size
         self.tgt_vocab_size = tgt_vocab_size
-        self.max_len = max_len
         self.d_model = d_model
+        self.max_len = max_len
         self.heads_num = heads_num
         self.d_ff = d_ff
         self.N = N
@@ -62,24 +62,22 @@ class Transformer(nn.Module):
 
         self.linear = nn.Linear(d_model, tgt_vocab_size)
 
-    def forward(
-            self,
-            src: torch.Tensor,
-            tgt: torch.Tensor,
-    ) -> torch.Tensor:
+    def forward(self, src: torch.Tensor, tgt: torch.Tensor) -> torch.Tensor:
         """
         Parameters:
-        ---------
-        src: torch.Tensor
+        ----------
+        src : torch.Tensor
             単語のid列. [batch_size, max_len]
-        tgt: torch.Tensor
+        tgt : torch.Tensor
             単語のid列. [batch_size, max_len]
         """
 
         # mask
-        pad_mask_src = self.__pad_mask(src)
+        pad_mask_src = self._pad_mask(src)
 
-        src = self.encoder(stc, pad_mask_src)
+        src = self.encoder(src, pad_mask_src)
+
+        # if tgt is not None:
 
         # target系列の"0(BOS)~max_len-1"(max_len-1系列)までを入力し、"1~max_len"(max_len-1系列)を予測する
         mask_self_attn = torch.logical_or(
@@ -90,9 +88,7 @@ class Transformer(nn.Module):
         return self.linear(dec_output)
 
     def _pad_mask(self, x: torch.Tensor) -> torch.Tensor:
-        """
-        単語のid列(ex:[[4,1,9,11,0,0,0...],[4,1,9,11,0,0,0...],[4,1,9,11,0,0,0...]...])からmask(src_mask)を作成する.
-
+        """単語のid列(ex:[[4,1,9,11,0,0,0...],[4,1,9,11,0,0,0...],[4,1,9,11,0,0,0...]...])からmaskを作成する.
         Parameters:
         ----------
         x : torch.Tensor
@@ -105,9 +101,7 @@ class Transformer(nn.Module):
         return mask.to(self.device)
 
     def _subsequent_mask(self, x: torch.Tensor) -> torch.Tensor:
-        """
-        DecoderのMasked-Attentionに使用するmask(tgt_mask)を作成する.
-
+        """DecoderのMasked-Attentionに使用するmaskを作成する.
         Parameters:
         ----------
         x : torch.Tensor
@@ -116,6 +110,13 @@ class Transformer(nn.Module):
         batch_size = x.size(0)
         max_len = x.size(1)
         return (
-            torch.tril(torch.ones(batch_size, max_len, max_len)).eq(
-                0).to(self.device)
+            torch.tril(
+                torch.ones(
+                    batch_size,
+                    max_len,
+                    max_len,
+                )
+            )
+            .eq(0)
+            .to(self.device)
         )
