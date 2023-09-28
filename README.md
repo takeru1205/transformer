@@ -148,6 +148,17 @@ Encoderは以下の要素からなっている
     - 出力に入力を足してLayer Norm
 
 
+
+### Mask
+
+EncoderのMask
+
+![imgs/src_mask.png](imgs/src_mask.png)
+
+Encoderへの入力文のパディングを参照しないようにするためのマスク
+
+
+
 ## Decoder
 
 ![decoder](imgs/decoder.png)
@@ -167,7 +178,17 @@ Decoderは以下の要素からなっている
     - 出力に入力を足してLayer Norm
 
 
+### Mask
 
+DecoderでMasked Multihead Attentionを使う理由
+- 学習時のデコーダーへのインプットは翻訳後の単語列
+- 翻訳後の単語列は前から順番に作成してく必要がある
+- i番目の翻訳語の単語を予測する際は、i-1番目までの情報しか使うべきでないから
+
+
+Decoderの入力文のパディングを参照しないようにする
+
+![imgs/tgt_mask.png](imgs/tgt_mask.png)
 
 
 
